@@ -242,7 +242,7 @@ img.logo {
 .xp-icon{ color:var(--primary); font-size:14px; }
 .badges-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px }
 .badge-card{ display:flex; gap:22px; align-items:center; padding:12px; border-radius:12px; justify-content: space-between; }
-.badge-icon{ width:44px;height:44px;border-radius:8px; display:flex;align-items:center;justify-content:center; font-size:18px; }
+.badge-icon{ width:44px;height:44px;border-radius:8px; display:flex;align-items:center;justify-content:center; font-size:18px;}
 .badge-body{ flex:1 }
 .badge-title{ font-weight:700 }
 .badge-sub{ font-size:13px; color:var(--muted); margin-top:6px }
