@@ -1,26 +1,18 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './styles/Home.css';
 import Logo from '../assets/logo-nobg.png';
-import Profile from '../assets/pfp.png';
 import Uploads from '../assets/upload.png';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHouse, faFile, faCamera, faFolder, faChartBar, faPaperPlane, faFilePdf, faWebAwesome, faCertificate} from "@fortawesome/free-solid-svg-icons";
-import DvdShadow from "./Animation.jsx";
+import { faHouse, faFile, faCamera, faFolder, faChartBar, faPaperPlane, faCircleDown, faFileArrowUp, faInfoCircle, faBolt, faFilePdf, faWebAwesome, faCertificate, faWandMagicSparkles, faCircle } from "@fortawesome/free-solid-svg-icons";
 
 import {
-  FaHome,
   FaUserCircle,
   FaFileAlt,
-  FaCamera,
-  FaFolder,
-  FaChartBar,
   FaChartLine,
   FaCalendarAlt,
   FaStar,
-  FaBullseye,
   FaSearch,
-  FaChevronRight,
-  FaChevronLeft
+  FaChevronRight
 } from 'react-icons/fa';
 
 export default function HomePage() {
@@ -42,6 +34,149 @@ export default function HomePage() {
   const xpNeeded = Math.max(0, xpForNextLevel - totalXP);
   const levelProgressPercent = Math.round(((totalXP - (currentLevel - 1) * 100) / (xpForNextLevel - (currentLevel - 1) * 100)) * 100);
 
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+  const profileBtnRef = useRef(null);
+
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+
+  const [showAbout, setShowAbout] = useState(false);
+
+  const fileInputRef = useRef(null);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [dragging, setDragging] = useState(false);
+
+  const [toast, setToast] = useState(null);
+  const toastTimerRef = useRef(null);
+
+  const canInstall = !!deferredPrompt && !isInstalled;
+
+  useEffect(() => {
+    function beforeInstallHandler(e) {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    }
+
+    function appInstalledHandler() {
+      setIsInstalled(true);
+      setDeferredPrompt(null);
+      showToastMessage('App installed ✅');
+    }
+
+    window.addEventListener('beforeinstallprompt', beforeInstallHandler);
+    window.addEventListener('appinstalled', appInstalledHandler);
+
+    try {
+      const isStandalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+      const isNavigatorStandalone = window.navigator.standalone; // iOS
+      if (isStandalone || isNavigatorStandalone) {
+        setIsInstalled(true);
+      }
+    } catch (err) {
+
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', beforeInstallHandler);
+      window.removeEventListener('appinstalled', appInstalledHandler);
+    };
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuOpen) {
+        const menu = menuRef.current;
+        const btn = profileBtnRef.current;
+        if (menu && !menu.contains(e.target) && btn && !btn.contains(e.target)) {
+          setMenuOpen(false);
+        }
+      }
+    }
+    function handleEsc(e) {
+      if (e.key === 'Escape') {
+        setMenuOpen(false);
+        setShowAbout(false);
+      }
+    }
+    window.addEventListener('click', handleClickOutside);
+    window.addEventListener('keydown', handleEsc);
+    return () => {
+      window.removeEventListener('click', handleClickOutside);
+      window.removeEventListener('keydown', handleEsc);
+    };
+  }, [menuOpen]);
+
+
+  function showToastMessage(msg, ms = 3500) {
+    setToast(msg);
+    clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(null), ms);
+  }
+
+  async function handleInstallClick() {
+    if (!deferredPrompt) {
+      showToastMessage('Install not available on this device/browser.');
+      setMenuOpen(false);
+      return;
+    }
+    try {
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice && choice.outcome === 'accepted') {
+        setIsInstalled(true);
+        showToastMessage('Thanks — app installed!');
+      } else {
+        showToastMessage('Installation dismissed.');
+      }
+    } catch (err) {
+      showToastMessage('Install failed.');
+    } finally {
+      setDeferredPrompt(null);
+      setMenuOpen(false);
+    }
+  }
+
+  function handleUploadClick() {
+    fileInputRef.current?.click();
+    setMenuOpen(false);
+  }
+
+  function handleFilesSelected(e) {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    if (files.length === 0) return;
+    setUploadedFiles((prev) => [...prev, ...files]);
+    showToastMessage(`${files.length} file(s) uploaded`);
+    e.target.value = null;
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    setDragging(true);
+  }
+  function handleDragLeave(e) {
+    e.preventDefault();
+    setDragging(false);
+  }
+  function handleDrop(e) {
+    e.preventDefault();
+    setDragging(false);
+    const dt = e.dataTransfer;
+    if (!dt) return;
+    const files = dt.files ? Array.from(dt.files) : [];
+    if (files.length > 0) {
+      setUploadedFiles((prev) => [...prev, ...files]);
+      showToastMessage(`${files.length} file(s) uploaded via drag & drop`);
+    }
+  }
+
+  function openAbout() {
+    setShowAbout(true);
+    setMenuOpen(false);
+  }
+  function closeAbout() {
+    setShowAbout(false);
+  }
 
   return (
     <div className="recall-app">
@@ -52,9 +187,105 @@ export default function HomePage() {
               <img src={Logo} alt="ReCall Logo" className="logo" />
               <h1 className="brand">ReCall</h1>
             </div>
-            <button className="profile-btn" aria-label="Open profile">
-              <FaUserCircle size={28} color='#2f6cff'/>
-            </button>
+
+            <div className="profile-wrap" style={{ position: 'relative' }}>
+              <button
+                ref={profileBtnRef}
+                className="profile-btn"
+                aria-label="Open profile"
+                aria-haspopup="true"
+                aria-expanded={menuOpen}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen((v) => !v);
+                }}
+              >
+                <FaUserCircle size={28} color="#2f6cff" />
+              </button>
+
+              {menuOpen && (
+                <ul
+                  ref={menuRef}
+                  className="profile-dropdown"
+                  role="menu"
+                  aria-label="Profile menu"
+                  style={{
+                    position: 'absolute',
+                    right: 0,
+                    top: 'calc(100% + 8px)',
+                    minWidth: 180,
+                    borderRadius: 12,
+                    padding: '8px',
+                    zIndex: 60,
+                  }}
+                >
+                  {canInstall && (
+                    <li
+                      role="menuitem"
+                      className="dropdown-item"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleInstallClick();
+                      }}
+                      style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, padding: '8px' }}
+                    >
+                      <span style={{ width: 28, textAlign: 'center' }}><FontAwesomeIcon icon={faCircleDown} /></span>
+                      <span>Download App</span>
+                    </li>
+                  )}
+
+                  {!canInstall && !isInstalled && (
+                    <li
+                      role="menuitem"
+                      className="dropdown-item"
+                      style={{ cursor: 'default', display: 'flex', alignItems: 'center', gap: 8, padding: '8px', color: '#888' }}
+                      title="Install prompt not available"
+                    >
+                      <span style={{ width: 28, textAlign: 'center' }}><FontAwesomeIcon icon={faCircleDown} /></span>
+                      <span>Download not available</span>
+                    </li>
+                  )}
+
+                  {isInstalled && (
+                    <li
+                      role="menuitem"
+                      className="dropdown-item"
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px', color: '#444' }}
+                      title="App already installed"
+                    >
+                      <span style={{ width: 28, textAlign: 'center' }}>✅</span>
+                      <span>App installed</span>
+                    </li>
+                  )}
+
+                  <li
+                    role="menuitem"
+                    className="dropdown-item"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleUploadClick();
+                    }}
+                    style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, padding: '8px' }}
+                  >
+                    <span style={{ width: 28, textAlign: 'center' }}><FontAwesomeIcon icon={faFileArrowUp} /></span>
+                    <span>Upload</span>
+                  </li>
+
+                  <li
+                    role="menuitem"
+                    className="dropdown-item"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openAbout();
+                    }}
+                    style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, padding: '8px' }}
+                  >
+                    <span style={{ width: 28, textAlign: 'center' }}><FontAwesomeIcon icon={faInfoCircle} /></span>
+                    <span>About</span>
+                  </li>
+                </ul>
+              )}
+            </div>
           </header>
 
           <div className="search-wrap">
@@ -68,6 +299,7 @@ export default function HomePage() {
               <FaSearch size={18} aria-hidden="true" color='#2f6cff' />
             </button>
           </div>
+
           <section className="streak-card" aria-labelledby="streakTitle">
             <div className="streak-left">
               <div className="streak-icon" aria-hidden>
@@ -92,9 +324,10 @@ export default function HomePage() {
               </div>
             </div>
           </section>
+
           <section className="quick-cards">
             <div className="quick-card">
-              <div className="quick-number"><FontAwesomeIcon icon={faFile} size='lg'/></div>
+              <div className="quick-number"><FontAwesomeIcon icon={faFile} size='lg' /></div>
               <div className="quick-meta">
                 <div className="quick-title">Quizzes</div>
                 <div className="quick-sub">1 Quiz</div>
@@ -102,7 +335,7 @@ export default function HomePage() {
             </div>
 
             <div className="quick-card">
-              <div className="quick-number"><FontAwesomeIcon icon={faFolder} size='lg'/></div>
+              <div className="quick-number"><FontAwesomeIcon icon={faFolder} size='lg' /></div>
               <div className="quick-meta">
                 <div className="quick-title">Summaries</div>
                 <div className="quick-sub">1 Card</div>
@@ -113,21 +346,21 @@ export default function HomePage() {
           <section className="recent-highlights" aria-labelledby="highlightsTitle">
             <div className="section-title-row">
               <h3 id="highlightsTitle">Recent Highlights</h3>
-              <button className="more-btn" aria-label="More options">All <FaChevronRight size={11} aria-hidden="true" color='#2f6cff'/></button>
+              <button className="more-btn" aria-label="More options">All <FaChevronRight size={11} aria-hidden="true" color='#2f6cff' /></button>
             </div>
 
             <ul className="highlights-list">
               {highlights.map((h) => (
                 <li className="highlight-item" key={h.id}>
                   <div className="highlight-icon" aria-hidden>
-                    <FaFileAlt size={18} color='#2f6cff'/>
+                    <FaFileAlt size={18} color='#2f6cff' />
                   </div>
                   <div className="highlight-body">
                     <div className="highlight-title">{h.title}</div>
                     <div className="highlight-sub">{h.words} Words · {h.date}</div>
                   </div>
                   <button className="chev" aria-label={`Open ${h.title}`}>
-                    <FaChevronRight size={18} aria-hidden="true" color='#2f6cff'/>
+                    <FaChevronRight size={18} aria-hidden="true" color='#2f6cff' />
                   </button>
                 </li>
               ))}
@@ -147,6 +380,7 @@ export default function HomePage() {
 
             <button className="nav-btn cam" aria-label="Camera">
               <FontAwesomeIcon icon={faCamera} size='2x' color="#fff" className='navicon main' />
+              <span className='white-text'>Scan</span>
             </button>
 
             <button className="nav-btn" aria-label="Folders">
@@ -194,11 +428,11 @@ export default function HomePage() {
                 />
 
                 <g className="donut-center" transform="translate(0,0)">
-                    <foreignObject x="70" y="55" width="40" height="40">
-                      <div style={{ display: "flex", justifyContent: "center" }}>
-                        <FaStar color="#2f6cff" size={27} />
-                      </div>
-                    </foreignObject>
+                  <foreignObject x="70" y="55" width="40" height="40">
+                    <div style={{ display: "flex", justifyContent: "center" }}>
+                      <FaStar color="#2f6cff" size={27} />
+                    </div>
+                  </foreignObject>
                   <text x="90" y="111" textAnchor="middle" fontSize="22" fontWeight="700">{requiredXP} XP</text>
                   <text x="90" y="126" textAnchor="middle" fontSize="12" fill="#666">Required</text>
                 </g>
@@ -232,43 +466,166 @@ export default function HomePage() {
             </div>
 
             <div className="badge-card wide">
-              <div className="badge-icon"><FaBullseye color="#2f6cff" aria-hidden="true" /></div>
+              <div className="badge-icon"><FontAwesomeIcon icon={faWandMagicSparkles} color="#2f6cff" /></div>
               <div className="badge-body">
                 <div className="badge-title">Motivated Learner</div>
                 <div className="badge-sub">600/600 of Lemnot</div>
               </div>
               <hr />
-              <div className="badge-icon"><FaBullseye color="#2f6cff" aria-hidden="true" /></div>
+              <div className="badge-icon"><FontAwesomeIcon icon={faBolt} color="#2f6cff" aria-hidden="true" /></div>
               <div className="badge-body">
                 <div className="badge-title">Level {currentLevel}</div>
                 <div className="badge-sub">{levelProgressPercent}% to Level {currentLevel + 1}</div>
               </div>
             </div>
           </div>
-          <div className="desk-uploads">
+
+          <div
+            className={`desk-uploads ${dragging ? 'dragging' : ''}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            aria-label="Drag and drop files here"
+            role="region"
+          >
             <img src={Uploads} alt="" className='desk-upload-image' />
             <div className="col">
-              <h3 className="desk-title">Drag and drop your files here</h3>
-              <div className="desk-upload">
-            <button className="desk-btn" aria-label="Notes">
-              <FontAwesomeIcon icon={faFile} size="2x" color="#2f6cff" className="desk-icon" />
-              <span className="desk-label">Notes</span>
-            </button>
-          
-            <button className="desk-btn" aria-label="Folders">
-              <FontAwesomeIcon icon={faFilePdf} size="2x" color="#2f6cff" className="desk-icon" />
-              <span className="desk-label">PDF</span>
-            </button>
-          
-            <button className="desk-btn" aria-label="Stats">
-              <FontAwesomeIcon icon={faPaperPlane} size="2x" color="#2f6cff" className="desk-icon" />
-              <span className="desk-label">Text</span>
-            </button>
-          </div>
+             <div className="desk-up">
+                {uploadedFiles.length === 0 ? (
+                  <>
+                  <h3 className="desk-title">Drag and drop your files here</h3>
+                  <div className="desk-upload">
+                    <button
+                      className="desk-btn"
+                      aria-label="Notes"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <FontAwesomeIcon icon={faFile} size="2x" className="desk-icon" />
+                      <span className="desk-label">Notes</span>
+                    </button>
+              
+                    <button
+                      className="desk-btn"
+                      aria-label="PDF"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <FontAwesomeIcon icon={faFilePdf} size="2x" className="desk-icon" />
+                      <span className="desk-label">PDF</span>
+                    </button>
+              
+                    <button
+                      className="desk-btn"
+                      aria-label="Text"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <FontAwesomeIcon icon={faPaperPlane} size="2x" className="desk-icon" />
+                      <span className="desk-label">Text</span>
+                    </button>
+                  </div>
+                  </>
+                ) : (
+                  <div className="uploaded-list" style={{ marginTop: 12 }}>
+                    <strong>Uploaded:</strong>
+                    <ul style={{ marginTop: 8 }}>
+                      {uploadedFiles.map((f, i) => (
+                        <li key={`${f.name}-${i}`} style={{ fontSize: 13 }}>
+                          {f.name}{" "}
+                          <span style={{ color: "#666", marginLeft: 8 }}>
+                            ({Math.round(f.size / 1024)} KB)
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>  
             </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              style={{ display: 'none' }}
+              onChange={handleFilesSelected}
+            />
           </div>
         </aside>
       </div>
+
+      {showAbout && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="aboutTitle"
+          className="modal-overlay"
+          onClick={closeAbout}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(255, 255, 255, 0.4)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            border: '0.3px solid rgba(19, 90, 255, 0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 80,
+          }}
+        >
+          <div
+            className="modal"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '0.3px solid rgba(19, 90, 255, 0.15)',
+              padding: 20,
+              borderRadius: 12,
+              width: 'min(720px, 94%)',
+              maxHeight: '80vh',
+              overflowY: 'auto',
+            }}
+          >
+            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 id="aboutTitle">About ReCall</h2>
+              <button aria-label="Close about" onClick={closeAbout} style={{ background: 'transparent', border: 'none', fontSize: 20 }}>✕</button>
+            </header>
+            <div style={{ marginTop: 12 }}>
+              <p><strong>ReCall</strong> — a focused study & streak app to help you retain knowledge. This app supports offline usage and installation as a Progressive Web App (PWA) where supported. Use the profile menu to install the app (if available) or upload files to your account.</p>
+              <p style={{ marginTop: 8 }}>Version: <strong>1.0.0</strong></p>
+              <p style={{ marginTop: 8 }}>If the Install option is not visible, your browser may not support the install prompt or you might already have the app added to your device.</p>
+            </div>
+            <footer style={{ marginTop: 16, textAlign: 'right' }}>
+              <button onClick={closeAbout} className="btn" style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '0.3px solid rgba(19, 90, 255, 0.15)'}}>Close</button>
+            </footer>
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <div
+          className="toast"
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'fixed',
+            bottom: 24,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: '#ffffff16',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            border: '0.3px solid rgba(19, 90, 255, 0.15)',
+            color: '#fff',
+            padding: '10px 16px',
+            borderRadius: 10,
+            zIndex: 90,
+            boxShadow: '0 6px 18px rgba(0,0,0,0.16)',
+          }}
+        >
+          {toast}
+        </div>
+      )}
     </div>
   );
 }

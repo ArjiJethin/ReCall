@@ -70,7 +70,14 @@ img.logo {
   border:0;background:transparent;padding:4px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
 }
 .profile-btn .avatar{ width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid rgba(0,0,0,0.04) }
-
+.profile-dropdown{
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 0.3px solid rgba(19, 90, 255, 0.15);
+  box-shadow: 0 2px 20px rgba(19, 90, 255, 0.06);
+  color: white;
+}
 .search-wrap{
   margin-top:16px;
   display:flex;
@@ -239,7 +246,7 @@ img.logo {
 .badge-body{ flex:1 }
 .badge-title{ font-weight:700 }
 .badge-sub{ font-size:13px; color:var(--muted); margin-top:6px }
-.badge-card.wide{ grid-column:1/-1; background: rgba(19, 90, 255, 0.01); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 0.5px solid rgba(19, 90, 255, 0.15);}
+.badge-card.wide{ grid-column:1/-1; background: rgba(19, 90, 255, 0.01); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 0.5px solid rgba(19, 90, 255, 0.15); justify-content: center;}
 
 @media (min-width: 992px){
   .recall-app{ padding: 24px 40px; }
@@ -398,6 +405,12 @@ img.logo {
     radial-gradient(circle at 32% 28%, rgba(47,108,255,0.10), rgba(47,108,255,0.10) 36%, rgba(47,108,255,0.10) 60%, transparent 74%),
     radial-gradient(circle at 70% 72%, rgba(120,160,255,0.11), transparent 40%);
   transition: opacity .6s linear;
+}
+
+.white-text{
+  color: #fff;
+  font-size: 1.1vh;
+  font-weight: 300;
 }
 
 .dvd-shadow::before {
