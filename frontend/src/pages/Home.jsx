@@ -3,7 +3,7 @@ import './styles/Home.css';
 import Logo from '../assets/logo-nobg.png';
 import Uploads from '../assets/upload.png';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHouse, faFile, faCamera, faFolder, faChartBar, faPaperPlane, faCircleDown, faFileArrowUp, faInfoCircle, faBolt, faFilePdf, faWebAwesome, faCertificate, faWandMagicSparkles, faCircle } from "@fortawesome/free-solid-svg-icons";
+import { faHouse, faFile, faCamera, faFolder, faChartBar, faPaperPlane, faCircleCheck, faCircleDown, faFileArrowUp, faInfoCircle, faBolt, faFilePdf, faWebAwesome, faCertificate, faWandMagicSparkles, faCircle } from "@fortawesome/free-solid-svg-icons";
 
 import {
   FaUserCircle,
@@ -61,7 +61,7 @@ export default function HomePage() {
     function appInstalledHandler() {
       setIsInstalled(true);
       setDeferredPrompt(null);
-      showToastMessage('App installed ✅');
+      showToastMessage('App installed successfully!');
     }
 
     window.addEventListener('beforeinstallprompt', beforeInstallHandler);
@@ -253,7 +253,7 @@ export default function HomePage() {
                       style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px', color: '#444' }}
                       title="App already installed"
                     >
-                      <span style={{ width: 28, textAlign: 'center' }}>✅</span>
+                      <span style={{ width: 28, textAlign: 'center' }}><FontAwesomeIcon icon={faCircleCheck}  color='green'/></span>
                       <span>App installed</span>
                     </li>
                   )}
