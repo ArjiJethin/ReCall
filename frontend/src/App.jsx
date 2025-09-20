@@ -1,16 +1,28 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Home from './pages/Home'
-import './App.css'
+import {
+  RouterProvider,
+  createBrowserRouter,
+} from "react-router-dom";
+import Home from "./pages/Home";
+import ComputerNetworks from "./pages/ComputerNetworks";
+import MachineLearning from "./pages/MachineLearning";
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Home />,
+  },
+  {
+    path: "/ComputerNetworks",
+    element: <ComputerNetworks />,
+  },
+  {
+    path: "/MachineLearning",
+    element: <MachineLearning />,
+  },
+]);
 
 function App() {
-
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-      </Routes>
-    </Router>
-  )
+  return <RouterProvider router={router} />;
 }
 
-export default App
+export default App;
+

@@ -4,6 +4,7 @@ import Logo from '../assets/logo-nobg.png';
 import Uploads from '../assets/upload.png';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse, faFile, faCamera, faFolder, faChartBar, faPaperPlane, faCircleCheck, faCircleDown, faFileArrowUp, faInfoCircle, faBolt, faFilePdf, faWebAwesome, faCertificate, faWandMagicSparkles, faCircle } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
 
 import {
   FaUserCircle,
@@ -16,8 +17,10 @@ import {
 } from 'react-icons/fa';
 
 export default function HomePage() {
+  const navigate = useNavigate();
+
   const totalXP = 54;
-  const requiredXP = 450;
+  const requiredXP = 46;
   const progress = Math.min(1, totalXP / requiredXP);
 
   const radius = 70;
@@ -25,8 +28,8 @@ export default function HomePage() {
   const dashOffset = circumference * (1 - progress);
 
   const highlights = [
-    { id: 1, title: 'Computer Networks', words: 100, date: '19 Sep' },
-    { id: 2, title: 'Machine Learning', words: 100, date: '18 Sep' },
+    { id: 1, title: 'Computer Networks', words: 4363, date: '19 Sep' },
+    { id: 2, title: 'Machine Learning', words: 2345, date: '18 Sep' },
   ];
 
   const currentLevel = Math.max(1, Math.floor(totalXP / 100) + 1);
@@ -73,9 +76,7 @@ export default function HomePage() {
       if (isStandalone || isNavigatorStandalone) {
         setIsInstalled(true);
       }
-    } catch (err) {
-
-    }
+    } catch (err) { /* ignore */ }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', beforeInstallHandler);
@@ -106,7 +107,6 @@ export default function HomePage() {
       window.removeEventListener('keydown', handleEsc);
     };
   }, [menuOpen]);
-
 
   function showToastMessage(msg, ms = 3500) {
     setToast(msg);
@@ -142,14 +142,37 @@ export default function HomePage() {
     setMenuOpen(false);
   }
 
+  // ---------- UPDATED: single file-change handler with CN-MOD1 and ML-MOD1 checks ----------
   function handleFilesSelected(e) {
     const files = e.target.files ? Array.from(e.target.files) : [];
     if (files.length === 0) return;
+
     setUploadedFiles((prev) => [...prev, ...files]);
     showToastMessage(`${files.length} file(s) uploaded`);
+
+    // If any uploaded file matches CN-MOD1 (case-insensitive), navigate to /ComputerNetworks
+    // Also check for ML-MOD1 and navigate to /MachineLearning.
+    files.forEach((file) => {
+      const name = (file.name || '').toLowerCase();
+
+      // preserve original CN behavior
+      if (name.includes('cn-mod1')) {
+        navigate('/ComputerNetworks');
+      }
+
+      // new: ML check (case-insensitive). If filename contains 'ml-mod1' (e.g. ML-MOD1.pdf), go to MachineLearning
+      if (name.includes('ml-mod1')) {
+        navigate('/MachineLearning');
+      }
+
+      // If you want to stop after first match, you can add a guard to break out of the loop.
+    });
+
+    // reset input so same file can be selected again later
     e.target.value = null;
   }
 
+  // ---------- UPDATED: drag & drop handler with CN-MOD1 and ML-MOD1 checks ----------
   function handleDragOver(e) {
     e.preventDefault();
     setDragging(true);
@@ -167,6 +190,20 @@ export default function HomePage() {
     if (files.length > 0) {
       setUploadedFiles((prev) => [...prev, ...files]);
       showToastMessage(`${files.length} file(s) uploaded via drag & drop`);
+
+      files.forEach((file) => {
+        const name = (file.name || '').toLowerCase();
+
+        // preserve original CN behavior
+        if (name.includes('cn-mod1')) {
+          navigate('/ComputerNetworks');
+        }
+
+        // new: ML check (case-insensitive)
+        if (name.includes('ml-mod1')) {
+          navigate('/MachineLearning');
+        }
+      });
     }
   }
 
@@ -330,15 +367,15 @@ export default function HomePage() {
               <div className="quick-number"><FontAwesomeIcon icon={faFile} size='lg' /></div>
               <div className="quick-meta">
                 <div className="quick-title">Quizzes</div>
-                <div className="quick-sub">1 Quiz</div>
+                <div className="quick-sub">2 Quizzes</div>
               </div>
             </div>
 
             <div className="quick-card">
               <div className="quick-number"><FontAwesomeIcon icon={faFolder} size='lg' /></div>
               <div className="quick-meta">
-                <div className="quick-title">Summaries</div>
-                <div className="quick-sub">1 Card</div>
+                <div className="quick-title">FlashCards</div>
+                <div className="quick-sub">2 Cards</div>
               </div>
             </div>
           </section>
@@ -500,25 +537,25 @@ export default function HomePage() {
                       aria-label="Notes"
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      <FontAwesomeIcon icon={faFile} size="2x" className="desk-icon" />
+                      <FontAwesomeIcon icon={faFile} size="2x" color='#3f72eaff' className="desk-icon" />
                       <span className="desk-label">Notes</span>
                     </button>
-              
+
                     <button
                       className="desk-btn"
                       aria-label="PDF"
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      <FontAwesomeIcon icon={faFilePdf} size="2x" className="desk-icon" />
+                      <FontAwesomeIcon icon={faFilePdf} size="2x" color='#3f72eaff' className="desk-icon" />
                       <span className="desk-label">PDF</span>
                     </button>
-              
+
                     <button
                       className="desk-btn"
                       aria-label="Text"
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      <FontAwesomeIcon icon={faPaperPlane} size="2x" className="desk-icon" />
+                      <FontAwesomeIcon icon={faPaperPlane} size="2x" color='#3f72eaff' className="desk-icon" />
                       <span className="desk-label">Text</span>
                     </button>
                   </div>
@@ -538,7 +575,7 @@ export default function HomePage() {
                     </ul>
                   </div>
                 )}
-              </div>  
+              </div>
             </div>
             <input
               ref={fileInputRef}
