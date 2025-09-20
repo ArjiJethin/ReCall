@@ -142,70 +142,75 @@ export default function HomePage() {
     setMenuOpen(false);
   }
 
-  // ---------- UPDATED: single file-change handler with CN-MOD1 and ML-MOD1 checks ----------
-  function handleFilesSelected(e) {
-    const files = e.target.files ? Array.from(e.target.files) : [];
-    if (files.length === 0) return;
+// ---------- UPDATED: single file-change handler with CN-MOD1 and ML-MOD1 checks ----------
+function handleFilesSelected(e) {
+  const files = e.target.files ? Array.from(e.target.files) : [];
+  if (files.length === 0) return;
 
+  setUploadedFiles((prev) => [...prev, ...files]);
+  showToastMessage(`${files.length} file(s) uploaded`);
+
+  files.forEach((file) => {
+    const name = (file.name || '').toLowerCase();
+
+    // CN-MOD1 check with delay
+    if (name.includes('cn-mod1')) {
+      setTimeout(() => {
+        navigate('/ComputerNetworks');
+      }, 4000);
+    }
+
+    // ML-MOD1 check with delay
+    if (name.includes('ml-mod1')) {
+      setTimeout(() => {
+        navigate('/MachineLearning');
+      }, 4000);
+    }
+  });
+
+  // reset input so same file can be selected again later
+  e.target.value = null;
+}
+
+// ---------- UPDATED: drag & drop handler with CN-MOD1 and ML-MOD1 checks ----------
+function handleDragOver(e) {
+  e.preventDefault();
+  setDragging(true);
+}
+function handleDragLeave(e) {
+  e.preventDefault();
+  setDragging(false);
+}
+function handleDrop(e) {
+  e.preventDefault();
+  setDragging(false);
+  const dt = e.dataTransfer;
+  if (!dt) return;
+  const files = dt.files ? Array.from(dt.files) : [];
+  if (files.length > 0) {
     setUploadedFiles((prev) => [...prev, ...files]);
-    showToastMessage(`${files.length} file(s) uploaded`);
+    showToastMessage(`${files.length} file(s) uploaded via drag & drop`);
 
-    // If any uploaded file matches CN-MOD1 (case-insensitive), navigate to /ComputerNetworks
-    // Also check for ML-MOD1 and navigate to /MachineLearning.
     files.forEach((file) => {
       const name = (file.name || '').toLowerCase();
 
-      // preserve original CN behavior
+      // CN-MOD1 check with delay
       if (name.includes('cn-mod1')) {
-        navigate('/ComputerNetworks');
-      }
-
-      // new: ML check (case-insensitive). If filename contains 'ml-mod1' (e.g. ML-MOD1.pdf), go to MachineLearning
-      if (name.includes('ml-mod1')) {
-        navigate('/MachineLearning');
-      }
-
-      // If you want to stop after first match, you can add a guard to break out of the loop.
-    });
-
-    // reset input so same file can be selected again later
-    e.target.value = null;
-  }
-
-  // ---------- UPDATED: drag & drop handler with CN-MOD1 and ML-MOD1 checks ----------
-  function handleDragOver(e) {
-    e.preventDefault();
-    setDragging(true);
-  }
-  function handleDragLeave(e) {
-    e.preventDefault();
-    setDragging(false);
-  }
-  function handleDrop(e) {
-    e.preventDefault();
-    setDragging(false);
-    const dt = e.dataTransfer;
-    if (!dt) return;
-    const files = dt.files ? Array.from(dt.files) : [];
-    if (files.length > 0) {
-      setUploadedFiles((prev) => [...prev, ...files]);
-      showToastMessage(`${files.length} file(s) uploaded via drag & drop`);
-
-      files.forEach((file) => {
-        const name = (file.name || '').toLowerCase();
-
-        // preserve original CN behavior
-        if (name.includes('cn-mod1')) {
+        setTimeout(() => {
           navigate('/ComputerNetworks');
-        }
+        }, 4000);
+      }
 
-        // new: ML check (case-insensitive)
-        if (name.includes('ml-mod1')) {
+      // ML-MOD1 check with delay
+      if (name.includes('ml-mod1')) {
+        setTimeout(() => {
           navigate('/MachineLearning');
-        }
-      });
-    }
+        }, 4000);
+      }
+    });
   }
+}
+
 
   function openAbout() {
     setShowAbout(true);
