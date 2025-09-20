@@ -157,14 +157,14 @@ function handleFilesSelected(e) {
     if (name.includes('cn-mod1')) {
       setTimeout(() => {
         navigate('/ComputerNetworks');
-      }, 4000);
+      }, 6000);
     }
 
     // ML-MOD1 check with delay
     if (name.includes('ml-mod1')) {
       setTimeout(() => {
         navigate('/MachineLearning');
-      }, 4000);
+      }, 6000);
     }
   });
 
@@ -198,14 +198,14 @@ function handleDrop(e) {
       if (name.includes('cn-mod1')) {
         setTimeout(() => {
           navigate('/ComputerNetworks');
-        }, 4000);
+        }, 6000);
       }
 
       // ML-MOD1 check with delay
       if (name.includes('ml-mod1')) {
         setTimeout(() => {
           navigate('/MachineLearning');
-        }, 4000);
+        }, 6000);
       }
     });
   }
@@ -658,7 +658,7 @@ function handleDrop(e) {
             backdropFilter: 'blur(8px)',
             WebkitBackdropFilter: 'blur(8px)',
             border: '0.3px solid rgba(19, 90, 255, 0.15)',
-            color: '#fff',
+            color: 'green',
             padding: '10px 16px',
             borderRadius: 10,
             zIndex: 90,
